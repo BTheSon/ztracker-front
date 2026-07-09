@@ -1,9 +1,17 @@
-import React, { useState } from "react";
+import React from "react";
 import { X, Check } from "lucide-react";
+import { DetailOrder } from "../api/orderApi";
+import { useEditForm } from "../hooks/useEditForm";
 
-export default function EditForm({ order, onCancel, onSave }) {
-    const [address, setAddress] = useState(order.address);
-    const [phone, setPhone] = useState(order.phone);
+interface EditFormProps {
+    order: DetailOrder;
+    onCancel: () => void;
+    onSave: (vals: { address: string; phone: string }) => void;
+}
+
+export default function EditForm({ order, onCancel, onSave }: EditFormProps) {
+    const { address, setAddress, phone, setPhone, submit } = useEditForm(order, onSave);
+
     return (
         <div className="px-4 pb-4 space-y-2 bg-amber-50/60 border-t border-amber-200">
             <div className="pt-3">
@@ -30,7 +38,7 @@ export default function EditForm({ order, onCancel, onSave }) {
                     <X size={14} /> Huỷ
                 </button>
                 <button
-                    onClick={() => onSave({ address, phone })}
+                    onClick={submit}
                     className="flex items-center gap-1 rounded-md bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-700"
                 >
                     <Check size={14} /> Lưu

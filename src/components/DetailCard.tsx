@@ -1,11 +1,18 @@
-import React, { useState } from "react";
+import React from "react";
 import { Phone, Pencil, CornerUpLeft } from "lucide-react";
 import ReceiptPlaceholder from "./ReceiptPlaceholder";
 import EditForm from "./EditForm";
+import { DetailOrder } from "../api/orderApi";
+import { useDetailCard } from "../hooks/useDetailCard";
 
-export default function DetailCard({ order, onMoveToQueue, onSave }) {
-    const [editing, setEditing] = useState(false);
-    const [current, setCurrent] = useState(order);
+interface DetailCardProps {
+    order: DetailOrder;
+    onMoveToQueue: (order: DetailOrder) => void;
+    onSave: (updated: DetailOrder) => void;
+}
+
+export default function DetailCard({ order, onMoveToQueue, onSave }: DetailCardProps) {
+    const { editing, setEditing, current, handleSave } = useDetailCard(order, onSave);
 
     return (
         <div className="bg-white border-b border-stone-200">
@@ -51,12 +58,7 @@ export default function DetailCard({ order, onMoveToQueue, onSave }) {
                 <EditForm
                     order={current}
                     onCancel={() => setEditing(false)}
-                    onSave={(vals) => {
-                        const updated = { ...current, ...vals };
-                        setCurrent(updated);
-                        onSave(updated);
-                        setEditing(false);
-                    }}
+                    onSave={handleSave}
                 />
             ) : (
                 <div className="px-4 py-3 flex items-center justify-between">

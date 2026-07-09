@@ -1,8 +1,14 @@
 import React from "react";
 import { GripVertical } from "lucide-react";
 import { Reorder } from "framer-motion";
+import { Order } from "../api/orderApi";
 
-export default function QueueScreen({ queue, onReorder }) {
+interface QueueScreenProps {
+    queue: Order[];
+    onReorder: (queue: Order[]) => void;
+}
+
+export default function QueueScreen({ queue, onReorder }: QueueScreenProps) {
     return (
         <div className="flex flex-col h-full bg-stone-100">
             <div className="flex-1 overflow-y-auto pb-32">

@@ -1,7 +1,14 @@
 import React from "react";
 import DetailCard from "../components/DetailCard";
+import { DetailOrder } from "../api/orderApi";
 
-export default function DetailScreen({ orders, onMoveToQueue, onSave }) {
+interface DetailScreenProps {
+    orders: DetailOrder[];
+    onMoveToQueue: (order: DetailOrder) => void;
+    onSave: (updated: DetailOrder) => void;
+}
+
+export default function DetailScreen({ orders, onMoveToQueue, onSave }: DetailScreenProps) {
     return (
         <div className="flex flex-col h-full bg-stone-100 overflow-y-auto pb-32">
             {orders.map((o) => (

@@ -1,52 +1,28 @@
-import React, { useState, useRef } from "react";
+import React from "react";
 import { Phone } from "lucide-react";
 import { motion } from "framer-motion";
 import QueueScreen from "./src/screens/QueueScreen";
 import DetailScreen from "./src/screens/DetailScreen";
-import { initialQueue, initialDetail } from "./src/data/mockData";
+import { useApp } from "./src/hooks/useApp";
 
 export default function App() {
-    const [queue, setQueue] = useState(initialQueue);
-    const [detail, setDetail] = useState(initialDetail);
-    const [screen, setScreen] = useState("queue"); // "queue" | "detail"
+    const {
+        queue,
+        setQueue,
+        detail,
+        screen,
+        loading,
+        scrollContainerRef,
+        scrollToScreen,
+        handleScroll,
+        handleMoveToQueue,
+        handleSaveDetail,
+        firstQueueOrder
+    } = useApp();
 
-    const scrollContainerRef = useRef(null);
-
-    const scrollToScreen = (scr) => {
-        setScreen(scr);
-        if (scrollContainerRef.current) {
-            const index = scr === "queue" ? 0 : 1;
-            scrollContainerRef.current.scrollTo({
-                left: index * window.innerWidth,
-                behavior: "smooth"
-            });
-        }
-    };
-
-    const handleScroll = (e) => {
-        const scrollLeft = e.target.scrollLeft;
-        const width = e.target.clientWidth;
-        if (width === 0) return;
-        const index = Math.round(scrollLeft / width);
-        const newScreen = index === 0 ? "queue" : "detail";
-        if (newScreen !== screen) {
-            setScreen(newScreen);
-        }
-    };
-
-    const handleMoveToQueue = (order) => {
-        setDetail((prev) => prev.filter((o) => o.id !== order.id));
-        setQueue((prev) => [
-            ...prev,
-            { id: order.id, address: order.address, phone: order.phone, timer: order.timer },
-        ]);
-    };
-
-    const handleSaveDetail = (updated) => {
-        setDetail((prev) => prev.map((o) => (o.id === updated.id ? { ...o, ...updated } : o)));
-    };
-
-    const firstQueueOrder = queue[0];
+    if (loading) {
+        return <div className="h-[100dvh] w-full flex items-center justify-center bg-stone-100 text-stone-500">Đang tải...</div>;
+    }
 
     return (
         <div className="h-[100dvh] w-full bg-stone-100 flex flex-col overflow-hidden">
