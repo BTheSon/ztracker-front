@@ -1,6 +1,7 @@
 import React from "react";
 import { Phone, Download } from "lucide-react";
 import { motion } from "framer-motion";
+import { Toaster } from "react-hot-toast";
 import QueueScreen from "./src/screens/QueueScreen";
 import DetailScreen from "./src/screens/DetailScreen";
 import { useApp } from "./src/hooks/useApp";
@@ -29,6 +30,7 @@ export default function App() {
 
     return (
         <div className="h-[100dvh] w-full bg-stone-100 flex flex-col overflow-hidden">
+            <Toaster position="top-center" />
             {/* Tabs Indicator */}
             <div className="flex bg-white border-b border-stone-200 z-10 shadow-sm relative">
                 <button 

@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from "react";
+import { io } from "socket.io-client";
+import toast from "react-hot-toast";
 import { orderApi, Order, DetailOrder } from "../api/orderApi";
 
 export function useApp() {
@@ -24,7 +26,60 @@ export function useApp() {
             }
         }
         fetchData();
-        return () => { mounted = false; };
+
+        const socket = io(import.meta.env.VITE_API_URL || "http://localhost:3000");
+
+        socket.on("connect", () => {
+            console.log("Socket.IO connected!");
+        });
+
+        socket.on("new_order", (payload: { id: string; address: string; phone: string; createdAt: string | Date }) => {
+            const newOrder: DetailOrder = {
+                id: payload.id,
+                address: payload.address,
+                phone: payload.phone,
+                timer: "Mới", 
+                hasImage: false,
+                time: new Date(payload.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                messages: []
+            };
+            setDetail(prev => [newOrder, ...prev]);
+            toast.success(`Đơn mới: ${payload.address}`);
+        });
+
+        socket.on("go_ship", (payload: { msg_id: string }) => {
+            setDetail(prev => {
+                const orderToMove = prev.find(o => o.id === payload.msg_id);
+                if (orderToMove) {
+                    setQueue(q => {
+                        if (q.some(o => o.id === payload.msg_id)) return q;
+                        return [...q, {
+                            id: orderToMove.id,
+                            address: orderToMove.address,
+                            phone: orderToMove.phone,
+                            timer: orderToMove.timer
+                        }];
+                    });
+                    toast.success("Đã chuyển 1 đơn vào hàng chờ");
+                }
+                return prev.filter(o => o.id !== payload.msg_id);
+            });
+        });
+
+        socket.on("deleted_oder", (payload: { msg_id: string }) => {
+            setDetail(prev => prev.filter(o => o.id !== payload.msg_id));
+            setQueue(prev => prev.filter(o => o.id !== payload.msg_id));
+            toast.error("Một đơn hàng đã bị xóa");
+        });
+
+        socket.on("server_message", (payload: { msg: string }) => {
+            toast(payload.msg, { icon: "🔔" });
+        });
+
+        return () => { 
+            mounted = false; 
+            socket.disconnect();
+        };
     }, []);
 
     const scrollToScreen = (scr: "queue" | "detail") => {
