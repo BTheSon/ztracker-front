@@ -1,9 +1,10 @@
 import React from "react";
-import { Phone } from "lucide-react";
+import { Phone, Download } from "lucide-react";
 import { motion } from "framer-motion";
 import QueueScreen from "./src/screens/QueueScreen";
 import DetailScreen from "./src/screens/DetailScreen";
 import { useApp } from "./src/hooks/useApp";
+import { usePWAInstall } from "./src/hooks/usePWAInstall";
 
 export default function App() {
     const {
@@ -19,6 +20,8 @@ export default function App() {
         handleSaveDetail,
         firstQueueOrder
     } = useApp();
+
+    const { isInstallable, install } = usePWAInstall();
 
     if (loading) {
         return <div className="h-[100dvh] w-full flex items-center justify-center bg-stone-100 text-stone-500">Đang tải...</div>;
@@ -45,6 +48,15 @@ export default function App() {
                     animate={{ x: screen === "queue" ? "0%" : "100%" }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
+                {isInstallable && (
+                    <button 
+                        onClick={install}
+                        className="absolute right-3 p-2 text-emerald-600 bg-emerald-50 rounded-full hover:bg-emerald-100 transition shadow-sm active:scale-95"
+                        title="Tải ứng dụng về máy"
+                    >
+                        <Download size={18} />
+                    </button>
+                )}
             </div>
 
             <div className="flex-1 overflow-hidden relative">
