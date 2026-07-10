@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { io } from "socket.io-client";
 import toast from "react-hot-toast";
-import { orderApi, Order, DetailOrder } from "../api/orderApi";
+import { orderApi, Order, DetailOrder, BASE_URL } from "../api/orderApi";
 
 export function useApp() {
     const [queue, setQueue] = useState<Order[]>([]);
@@ -27,7 +27,7 @@ export function useApp() {
         }
         fetchData();
 
-        const socket = io(import.meta.env.VITE_API_URL || "http://localhost:3000");
+        const socket = io(BASE_URL);
 
         socket.on("connect", () => {
             console.log("Socket.IO connected!");

@@ -19,6 +19,8 @@ export interface DetailOrder extends Order {
     messages?: Message[];
 }
 
+export const BASE_URL = "http://localhost:3000";
+
 const mockQueue: Order[] = [
     { id: "q1", address: "109 trần hưng đạo", phone: "0294976437", timer: "30p" },
     { id: "q2", address: "109 trần hưng đạo", phone: "0294976437", timer: "30p" },
