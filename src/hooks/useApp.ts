@@ -28,22 +28,36 @@ export function useApp() {
         }
         fetchData();
 
+        // Request Notification permission
+        if ("Notification" in window && Notification.permission === "default") {
+            Notification.requestPermission();
+        }
+
         const socket = io(import.meta.env.VITE_API_URL || "http://localhost:3000");
 
         socket.on("connect", () => {
             console.log("Socket.IO connected!");
         });
 
-        socket.on("new_order", (payload: { id: string; address: string; phone: string; createdAt: string | Date }) => {
+        socket.on("new_order", (payload: { id: string; address: string; phone: string; img_url: string; createdAt: string | Date }) => {
             const newOrder: DetailOrder = {
                 id: payload.id,
                 address: payload.address,
                 phone: payload.phone,
+                img_url: payload.img_url,
                 createdAt: new Date(payload.createdAt).toISOString(), 
                 time: new Date(payload.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
             setDetail(prev => [newOrder, ...prev]);
             toast.success(`Đơn mới: ${payload.address}`);
+            
+            // Native Browser Notification
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification("Đơn hàng mới! 🛵", {
+                    body: `Địa chỉ: ${payload.address}\nSĐT: ${payload.phone}`,
+                    icon: "/icon-192x192.svg"
+                });
+            }
         });
 
         socket.on("go_ship", (payload: { msg_id: string }) => {
@@ -120,17 +134,12 @@ export function useApp() {
     const handleCallQueueOrder = (id: string, isAlreadyCalled: boolean) => {
         if (isAlreadyCalled) return; // Dial native phone app, no state update needed
 
-        setQueue(prev => {
-            const index = prev.findIndex(o => o.id === id);
-            if (index === -1) return prev;
-            
-            const order = { ...prev[index], called: true };
-            setCalledQueue(cq => [order, ...cq]);
-            
-            const newQueue = [...prev];
-            newQueue.splice(index, 1);
-            return newQueue;
-        });
+        // Extract the order outside the state updater to avoid React Strict Mode double-invocation bug
+        const order = queue.find(o => o.id === id);
+        if (!order) return;
+
+        setQueue(prev => prev.filter(o => o.id !== id));
+        setCalledQueue(cq => [{ ...order, called: true }, ...cq]);
     };
 
     return {
