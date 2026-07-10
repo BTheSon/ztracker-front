@@ -1,9 +1,9 @@
 import React from "react";
 import { Phone, Pencil, CornerUpLeft } from "lucide-react";
-import ReceiptPlaceholder from "./ReceiptPlaceholder";
 import EditForm from "./EditForm";
 import { DetailOrder } from "../api/orderApi";
 import { useDetailCard } from "../hooks/useDetailCard";
+import LiveTimer from "./LiveTimer";
 
 interface DetailCardProps {
     order: DetailOrder;
@@ -18,39 +18,23 @@ export default function DetailCard({ order, onMoveToQueue, onSave }: DetailCardP
         <div className="bg-white border-b border-stone-200">
             <div className="px-4 pt-4 pb-2 flex items-start justify-between">
                 <div className="font-bold text-lg text-stone-800">{current.address}</div>
-                <span className="text-red-500 font-medium text-sm">{current.timer}</span>
+                <span className="text-red-500 font-medium text-sm">
+                    <LiveTimer createdAt={current.createdAt} />
+                </span>
             </div>
-            <div className="px-4 pb-3 text-stone-500 text-sm">{current.phone}</div>
+            <div className="px-4 pb-3 text-stone-500 text-sm flex items-center justify-between">
+                <span>{current.phone}</span>
+                {current.time && <span className="text-xs text-stone-400">{current.time}</span>}
+            </div>
 
-            {current.hasImage && <ReceiptPlaceholder />}
-
-            {current.messages && current.messages.length > 0 && (
-                <div className="px-4 py-3 space-y-2">
-                    {current.time && <div className="text-center text-xs text-stone-400 mb-1">{current.time}</div>}
-                    {current.messages.map((m, i) =>
-                        m.from === "me" ? (
-                            <div key={i} className="flex flex-col items-end">
-                                {m.name && <div className="text-xs text-stone-400 mb-0.5">{m.name}</div>}
-                                <div className="bg-blue-600 text-white rounded-2xl rounded-br-sm px-4 py-2 max-w-[80%] text-sm">
-                                    {m.text}
-                                </div>
-                            </div>
-                        ) : (
-                            <div key={i} className="flex items-end gap-2">
-                                {m.avatar && (
-                                    <div className="w-7 h-7 rounded-full bg-stone-300 flex-shrink-0" title="avatar" />
-                                )}
-                                <div
-                                    className={[
-                                        "bg-stone-100 rounded-2xl rounded-bl-sm px-4 py-2 max-w-[80%] text-sm text-stone-800",
-                                        m.link ? "underline text-blue-600" : "",
-                                    ].join(" ")}
-                                >
-                                    {m.text}
-                                </div>
-                            </div>
-                        )
-                    )}
+            {current.img_url && (
+                <div className="px-4 pb-4">
+                    <img 
+                        src={current.img_url} 
+                        alt="Hóa đơn" 
+                        className="w-full h-auto object-cover rounded-lg border border-stone-200"
+                        loading="lazy"
+                    />
                 </div>
             )}
 

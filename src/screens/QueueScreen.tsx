@@ -2,6 +2,7 @@ import React from "react";
 import { GripVertical } from "lucide-react";
 import { Reorder } from "framer-motion";
 import { Order } from "../api/orderApi";
+import LiveTimer from "../components/LiveTimer";
 
 interface QueueScreenProps {
     queue: Order[];
@@ -30,7 +31,7 @@ export default function QueueScreen({ queue, onReorder }: QueueScreenProps) {
                                 </div>
                                 <div className="flex items-center gap-3 pointer-events-none">
                                     <span className={isFirst ? "text-blue-600 font-medium" : "text-red-500 font-medium"}>
-                                        {item.timer}
+                                        <LiveTimer createdAt={item.createdAt} />
                                     </span>
                                     <div className="text-stone-400 p-1">
                                         <GripVertical size={20} />

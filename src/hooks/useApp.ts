@@ -38,10 +38,8 @@ export function useApp() {
                 id: payload.id,
                 address: payload.address,
                 phone: payload.phone,
-                timer: "Mới", 
-                hasImage: false,
-                time: new Date(payload.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                messages: []
+                createdAt: new Date(payload.createdAt).toISOString(), 
+                time: new Date(payload.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
             setDetail(prev => [newOrder, ...prev]);
             toast.success(`Đơn mới: ${payload.address}`);
@@ -57,7 +55,7 @@ export function useApp() {
                             id: orderToMove.id,
                             address: orderToMove.address,
                             phone: orderToMove.phone,
-                            timer: orderToMove.timer
+                            createdAt: orderToMove.createdAt
                         }];
                     });
                     toast.success("Đã chuyển 1 đơn vào hàng chờ");
@@ -109,7 +107,7 @@ export function useApp() {
         setDetail((prev) => prev.filter((o) => o.id !== order.id));
         setQueue((prev) => [
             ...prev,
-            { id: order.id, address: order.address, phone: order.phone, timer: order.timer },
+            { id: order.id, address: order.address, phone: order.phone, createdAt: order.createdAt },
         ]);
     };
 
