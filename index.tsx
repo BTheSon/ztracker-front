@@ -11,6 +11,7 @@ export default function App() {
     const {
         queue,
         setQueue,
+        calledQueue,
         detail,
         screen,
         loading,
@@ -19,7 +20,8 @@ export default function App() {
         handleScroll,
         handleMoveToQueue,
         handleSaveDetail,
-        firstQueueOrder
+        handleCallQueueOrder,
+        firstUncalledOrder
     } = useApp();
 
     const { isInstallable, install } = usePWAInstall();
@@ -69,7 +71,12 @@ export default function App() {
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
                 >
                     <div className="w-full h-full flex-shrink-0 snap-start overflow-hidden">
-                        <QueueScreen queue={queue} onReorder={setQueue} />
+                        <QueueScreen 
+                            queue={queue} 
+                            calledQueue={calledQueue}
+                            onReorder={setQueue} 
+                            onCallOrder={handleCallQueueOrder} 
+                        />
                     </div>
                     <div className="w-full h-full flex-shrink-0 snap-start overflow-hidden">
                         <DetailScreen orders={detail} onMoveToQueue={handleMoveToQueue} onSave={handleSaveDetail} />
@@ -83,12 +90,15 @@ export default function App() {
                 style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
             >
                 <a
-                    href={firstQueueOrder ? `tel:${firstQueueOrder.phone}` : undefined}
+                    href={firstUncalledOrder ? `tel:${firstUncalledOrder.phone}` : undefined}
+                    onClick={() => {
+                        if (firstUncalledOrder) handleCallQueueOrder(firstUncalledOrder.id, false);
+                    }}
                     className={[
                         "w-16 h-16 rounded-full flex items-center justify-center text-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] pointer-events-auto transition-transform active:scale-95",
-                        firstQueueOrder ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/30" : "bg-stone-300 pointer-events-none",
+                        firstUncalledOrder ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/30" : "bg-stone-300 pointer-events-none",
                     ].join(" ")}
-                    title={firstQueueOrder ? `Gọi ${firstQueueOrder.phone}` : "Không có đơn đầu tiên"}
+                    title={firstUncalledOrder ? `Gọi ${firstUncalledOrder.phone}` : "Không có đơn cần gọi"}
                 >
                     <Phone size={26} />
                 </a>

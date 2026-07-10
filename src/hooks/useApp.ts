@@ -5,6 +5,7 @@ import { orderApi, Order, DetailOrder, BASE_URL } from "../api/orderApi";
 
 export function useApp() {
     const [queue, setQueue] = useState<Order[]>([]);
+    const [calledQueue, setCalledQueue] = useState<Order[]>([]);
     const [detail, setDetail] = useState<DetailOrder[]>([]);
     const [screen, setScreen] = useState<"queue" | "detail">("queue");
     const [loading, setLoading] = useState(true);
@@ -27,7 +28,7 @@ export function useApp() {
         }
         fetchData();
 
-        const socket = io(BASE_URL);
+        const socket = io(import.meta.env.VITE_API_URL || "http://localhost:3000");
 
         socket.on("connect", () => {
             console.log("Socket.IO connected!");
@@ -67,6 +68,7 @@ export function useApp() {
         socket.on("deleted_oder", (payload: { msg_id: string }) => {
             setDetail(prev => prev.filter(o => o.id !== payload.msg_id));
             setQueue(prev => prev.filter(o => o.id !== payload.msg_id));
+            setCalledQueue(prev => prev.filter(o => o.id !== payload.msg_id));
             toast.error("Một đơn hàng đã bị xóa");
         });
 
@@ -115,9 +117,26 @@ export function useApp() {
         setDetail((prev) => prev.map((o) => (o.id === updated.id ? { ...o, ...updated } : o)));
     };
 
+    const handleCallQueueOrder = (id: string, isAlreadyCalled: boolean) => {
+        if (isAlreadyCalled) return; // Dial native phone app, no state update needed
+
+        setQueue(prev => {
+            const index = prev.findIndex(o => o.id === id);
+            if (index === -1) return prev;
+            
+            const order = { ...prev[index], called: true };
+            setCalledQueue(cq => [order, ...cq]);
+            
+            const newQueue = [...prev];
+            newQueue.splice(index, 1);
+            return newQueue;
+        });
+    };
+
     return {
         queue,
         setQueue,
+        calledQueue,
         detail,
         screen,
         loading,
@@ -126,6 +145,7 @@ export function useApp() {
         handleScroll,
         handleMoveToQueue,
         handleSaveDetail,
-        firstQueueOrder: queue[0]
+        handleCallQueueOrder,
+        firstUncalledOrder: queue[0]
     };
 }
