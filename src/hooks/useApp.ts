@@ -9,6 +9,7 @@ export function useApp() {
     const [detail, setDetail] = useState<DetailOrder[]>([]);
     const [screen, setScreen] = useState<"queue" | "detail">("queue");
     const [loading, setLoading] = useState(true);
+    const [qrBase64, setQrBase64] = useState<string | null>(null);
 
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -33,10 +34,18 @@ export function useApp() {
             Notification.requestPermission();
         }
 
-        const socket = io(import.meta.env.VITE_API_URL || "http://localhost:3000");
+        const socket = io("http://localhost:3000");
 
         socket.on("connect", () => {
             console.log("Socket.IO connected!");
+        });
+
+        socket.on("login_qr", (payload: { qrcode_base64: string }) => {
+            toast.success("Đăng nhập zalo để nhận đơn");
+            if (payload && payload.qrcode_base64) {
+                // payload.qrcode_base64 is expected to be a base64-encoded PNG/JPEG string (no data-uri prefix)
+                setQrBase64(payload.qrcode_base64);
+            }
         });
 
         socket.on("new_order", (payload: { id: string; address: string; phone: string; img_url: string; createdAt: string | Date }) => {
@@ -142,6 +151,8 @@ export function useApp() {
         setCalledQueue(cq => [{ ...order, called: true }, ...cq]);
     };
 
+    const clearQr = () => setQrBase64(null);
+
     return {
         queue,
         setQueue,
@@ -155,6 +166,8 @@ export function useApp() {
         handleMoveToQueue,
         handleSaveDetail,
         handleCallQueueOrder,
-        firstUncalledOrder: queue[0]
+        firstUncalledOrder: queue[0],
+        qrBase64,
+        clearQr
     };
 }

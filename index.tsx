@@ -21,7 +21,9 @@ export default function App() {
         handleMoveToQueue,
         handleSaveDetail,
         handleCallQueueOrder,
-        firstUncalledOrder
+        firstUncalledOrder,
+        qrBase64,
+        clearQr
     } = useApp();
 
     const { isInstallable, install } = usePWAInstall();
@@ -33,6 +35,15 @@ export default function App() {
     return (
         <div className="h-[100dvh] w-full bg-stone-100 flex flex-col overflow-hidden">
             <Toaster position="top-center" />
+            {qrBase64 && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="bg-white p-4 rounded-lg max-w-sm w-full flex flex-col items-center">
+                        <div className="text-sm text-stone-600 mb-2">Quét mã QR để đăng nhập</div>
+                        <img src={`data:image/png;base64,${qrBase64}`} alt="Login QR" className="w-64 h-64 object-contain" />
+                        <button onClick={clearQr} className="mt-4 px-4 py-2 bg-emerald-500 text-white rounded">Đóng</button>
+                    </div>
+                </div>
+            )}
             {/* Tabs Indicator */}
             <div className="flex bg-white border-b border-stone-200 z-10 shadow-sm relative">
                 <button 
