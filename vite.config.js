@@ -7,8 +7,15 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
+      injectManifest: {
+        injectionPoint: undefined // Will not inject precache list into sw.ts to avoid errors if not needed, or we can use it. Let's just allow default injection
+      },
       devOptions: {
-        enabled: true
+        enabled: true,
+        type: 'module'
       },
       includeAssets: ['icon-192x192.svg', 'icon-512x512.svg'],
       manifest: {

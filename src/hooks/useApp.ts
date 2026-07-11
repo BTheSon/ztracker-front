@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import toast from "react-hot-toast";
 import { orderApi, Order, DetailOrder } from "../api/orderApi";
 import { createSocket } from "../api/socketClient";
+import { subscribeToWebPush } from "../utils/pushHelper";
 
 export function useApp() {
     const [queue, setQueue] = useState<Order[]>([]);
@@ -29,9 +30,15 @@ export function useApp() {
         }
         fetchData();
 
-        // Request Notification permission
-        if ("Notification" in window && Notification.permission === "default") {
-            Notification.requestPermission();
+        // Request Notification permission and subscribe to Web Push
+        if ("Notification" in window) {
+            if (Notification.permission === "default") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') subscribeToWebPush();
+                });
+            } else if (Notification.permission === "granted") {
+                subscribeToWebPush();
+            }
         }
         
         const socket = createSocket();
