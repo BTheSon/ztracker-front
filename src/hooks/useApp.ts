@@ -160,6 +160,27 @@ export function useApp() {
 
     const clearQr = () => setQrBase64(null);
 
+    const requestNotificationPermission = async () => {
+        if (!("Notification" in window)) {
+            toast.error("Trình duyệt không hỗ trợ thông báo");
+            return;
+        }
+        
+        if (Notification.permission === "granted") {
+            toast.success("Đã cấp quyền thông báo trước đó");
+            subscribeToWebPush();
+            return;
+        }
+        
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            toast.success("Đã cấp quyền thông báo thành công!");
+            subscribeToWebPush();
+        } else {
+            toast.error("Bạn đã từ chối cấp quyền thông báo");
+        }
+    };
+
     return {
         queue,
         setQueue,
@@ -175,6 +196,7 @@ export function useApp() {
         handleCallQueueOrder,
         firstUncalledOrder: queue[0],
         qrBase64,
-        clearQr
+        clearQr,
+        requestNotificationPermission
     };
 }

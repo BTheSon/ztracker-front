@@ -1,11 +1,13 @@
 import React from "react";
-import { Phone, Download } from "lucide-react";
+import { Phone, Download, Bell } from "lucide-react";
 import { motion } from "framer-motion";
 import { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import QueueScreen from "./src/screens/QueueScreen";
 import DetailScreen from "./src/screens/DetailScreen";
 import { useApp } from "./src/hooks/useApp";
 import { usePWAInstall } from "./src/hooks/usePWAInstall";
+import { BASE_URL } from "./src/config";
 
 export default function App() {
     const {
@@ -23,7 +25,8 @@ export default function App() {
         handleCallQueueOrder,
         firstUncalledOrder,
         qrBase64,
-        clearQr
+        clearQr,
+        requestNotificationPermission
     } = useApp();
 
     const { isInstallable, install } = usePWAInstall();
@@ -45,7 +48,14 @@ export default function App() {
                 </div>
             )}
             {/* Tabs Indicator */}
-            <div className="flex bg-white border-b border-stone-200 z-10 shadow-sm relative">
+            <div className="flex bg-white border-b border-stone-200 z-10 shadow-sm relative items-center justify-center">
+                <button 
+                    onClick={requestNotificationPermission}
+                    className="absolute left-3 p-2 text-stone-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-full transition shadow-sm active:scale-95"
+                    title="Bật thông báo"
+                >
+                    <Bell size={18} />
+                </button>
                 <button 
                     onClick={() => scrollToScreen("queue")}
                     className={`flex-1 py-3 text-sm font-medium text-center transition ${screen === "queue" ? "text-emerald-600" : "text-stone-400"}`}

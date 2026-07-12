@@ -26,14 +26,24 @@ export async function subscribeToWebPush() {
         const registration = await navigator.serviceWorker.ready;
         
         // Gọi API lấy VAPID Public Key từ Backend
-        const response = await fetch(`${BASE_URL}/api/push/vapid-public-key`);
+        const response = await fetch(`${BASE_URL}/push/vapid-public-key`);
         if (!response.ok) {
             throw new Error('Không thể lấy VAPID public key từ Backend');
         }
         
-        const data = await response.json();
-        // Backend có thể trả về { publicKey: "..." } hoặc bản thân data là chuỗi tùy thiết kế, ta lấy thuộc tính publicKey
-        const vapidPublicKey = data.publicKey || data; 
+        const responseData = await response.json();
+        console.log("Raw VAPID API response:", responseData);
+        
+        // Dựa theo tài liệu Backend, data trả về nằm trong trường { data: { publicKey: "..." } }
+        let vapidPublicKey = responseData?.data?.publicKey || responseData?.publicKey;
+        
+        if (!vapidPublicKey || typeof vapidPublicKey !== 'string') {
+            throw new Error(`Invalid VAPID public key format received: ${JSON.stringify(responseData)}`);
+        }
+
+        // Clean up the key: remove spaces, newlines, and quotes
+        vapidPublicKey = vapidPublicKey.replace(/[\s"']/g, '');
+        console.log("Cleaned VAPID Key:", vapidPublicKey);
         
         const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
 
@@ -44,7 +54,7 @@ export async function subscribeToWebPush() {
         });
 
         // Gửi subscription lên Backend lưu lại
-        const subResponse = await fetch(`${BASE_URL}/api/push/subscribe`, {
+        const subResponse = await fetch(`${BASE_URL}/push/subscribe`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
