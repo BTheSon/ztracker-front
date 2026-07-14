@@ -6,28 +6,51 @@ import { precacheAndRoute } from 'workbox-precaching';
 // Tự động cache các file tĩnh của ứng dụng do Vite build ra
 precacheAndRoute(self.__WB_MANIFEST || []);
 
+import { db } from './db/db';
+
 // Lắng nghe sự kiện Push từ Backend gởi tới
 self.addEventListener('push', (event) => {
-    let data = { title: "Thông báo", body: "Bạn có thông báo mới", url: "/" };
+    let payload: any = { title: "Thông báo", body: "Bạn có thông báo mới", data: { url: "/" } };
     
     if (event.data) {
         try {
-            data = event.data.json();
+            payload = event.data.json();
         } catch (e) {
-            data.body = event.data.text();
+            payload.body = event.data.text();
         }
     }
 
-    const options: NotificationOptions = {
-        body: data.body,
-        icon: '/icon-192x192.svg',
-        badge: '/icon-192x192.svg',
-        data: { url: data.url || '/' }
+    const processPush = async () => {
+        // Trích xuất cục Order từ payload theo định dạng Backend mới
+        if (payload.data && payload.data.type === 'new_order') {
+            const orderData = payload.data.orderData;
+            if (orderData) {
+                console.log("Đã nhận được chi tiết đơn hàng (Background):", orderData);
+                // Lưu vào IndexedDB (trạng thái mặc định là 'detail')
+                await db.orders.put({
+                    id: orderData.id,
+                    address: orderData.address,
+                    phone: orderData.phone,
+                    img_url: orderData.img_url,
+                    createdAt: orderData.createdAt,
+                    status: 'detail',
+                    time: new Date(orderData.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    orderIndex: Date.now()
+                });
+            }
+        }
+
+        const options: NotificationOptions = {
+            body: payload.body,
+            icon: payload.icon || '/icon-192x192.svg',
+            badge: '/icon-192x192.svg',
+            data: payload.data || { url: '/' }
+        };
+
+        await self.registration.showNotification(payload.title, options);
     };
 
-    event.waitUntil(
-        self.registration.showNotification(data.title, options)
-    );
+    event.waitUntil(processPush());
 });
 
 // Lắng nghe sự kiện khi người dùng bấm vào thông báo
