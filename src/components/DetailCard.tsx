@@ -1,5 +1,5 @@
 import React from "react";
-import { Phone, Pencil, CornerUpLeft, Check, X } from "lucide-react";
+import { Phone, Pencil, CornerUpLeft, Check, X, Trash2 } from "lucide-react";
 import { DetailOrder } from "../api/orderApi";
 import { useDetailCard } from "../hooks/useDetailCard";
 import LiveTimer from "./LiveTimer";
@@ -8,9 +8,19 @@ interface DetailCardProps {
     order: DetailOrder;
     onMoveToQueue: (order: DetailOrder) => void;
     onSave: (updated: DetailOrder) => void;
+    onDelete: (id: string) => void;
 }
 
-export default function DetailCard({ order, onMoveToQueue, onSave }: DetailCardProps) {
+function formatPhone(phone: string) {
+    if (!phone) return phone;
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.length === 10) {
+        return `${cleaned.slice(0,4)}.${cleaned.slice(4,7)}.${cleaned.slice(7)}`;
+    }
+    return phone;
+}
+
+export default function DetailCard({ order, onMoveToQueue, onSave, onDelete }: DetailCardProps) {
     const { 
         editing, startEditing, cancelEditing, current, 
         editAddress, setEditAddress, editPhone, setEditPhone, handleSave 
@@ -40,9 +50,10 @@ export default function DetailCard({ order, onMoveToQueue, onSave }: DetailCardP
                         value={editPhone}
                         onChange={e => setEditPhone(e.target.value)}
                         className="text-sm text-stone-800 border-b-2 border-emerald-400 focus:outline-none w-full mr-4 bg-emerald-50/50 px-1 py-0.5 rounded-t-sm transition-colors"
+                        type="tel"
                     />
                 ) : (
-                    <span>{current.phone}</span>
+                    <span>{formatPhone(current.phone)}</span>
                 )}
                 {current.time && !editing && <span className="text-xs text-stone-400 flex-shrink-0">{current.time}</span>}
             </div>
@@ -90,6 +101,17 @@ export default function DetailCard({ order, onMoveToQueue, onSave }: DetailCardP
                                 title="Đưa đơn vào hàng chờ"
                             >
                                 <CornerUpLeft size={18} />
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (window.confirm("Bạn có chắc muốn xóa đơn này?")) {
+                                        onDelete(current.id);
+                                    }
+                                }}
+                                className="w-10 h-10 rounded-full border border-red-200 flex items-center justify-center text-red-400 hover:bg-red-50 hover:text-red-500 transition active:scale-90 shadow-sm ml-2"
+                                title="Xóa đơn hàng"
+                            >
+                                <Trash2 size={18} />
                             </button>
                         </div>
                         <a

@@ -136,9 +136,25 @@ export function useApp() {
         await db.orders.update(updated.id, { ...updated });
     };
 
+    const handleDeleteOrder = async (id: string) => {
+        await db.orders.delete(id);
+    };
+
     const handleCallQueueOrder = async (id: string, isAlreadyCalled: boolean) => {
         if (isAlreadyCalled) return; // Dial native phone app, no state update needed
         await db.orders.update(id, { status: 'called' });
+    };
+
+    const handleClearHistory = async () => {
+        const calledOrders = await db.orders.where('status').equals('called').toArray();
+        const ids = calledOrders.map(o => o.id);
+        await db.orders.bulkDelete(ids);
+        toast.success("Đã dọn dẹp lịch sử đơn gọi");
+    };
+
+    const handleResetAll = async () => {
+        await db.orders.clear();
+        toast.success("Đã xóa trắng toàn bộ dữ liệu");
     };
 
     const clearQr = () => setQrBase64(null);
@@ -176,7 +192,10 @@ export function useApp() {
         handleScroll,
         handleMoveToQueue,
         handleSaveDetail,
+        handleDeleteOrder,
         handleCallQueueOrder,
+        handleClearHistory,
+        handleResetAll,
         firstUncalledOrder: queue[0],
         qrBase64,
         clearQr,

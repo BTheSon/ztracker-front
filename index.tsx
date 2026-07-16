@@ -1,5 +1,5 @@
-import React from "react";
-import { Phone, Download, Bell } from "lucide-react";
+import React, { useState } from "react";
+import { Phone, Download, Bell, Menu } from "lucide-react";
 import { motion } from "framer-motion";
 import { Toaster } from "react-hot-toast";
 import toast from "react-hot-toast";
@@ -8,6 +8,8 @@ import DetailScreen from "./src/screens/DetailScreen";
 import { useApp } from "./src/hooks/useApp";
 import { usePWAInstall } from "./src/hooks/usePWAInstall";
 import { BASE_URL } from "./src/config";
+import Sidebar from "./src/components/Sidebar";
+import ConfirmModal, { ConfirmModalProps } from "./src/components/ConfirmModal";
 
 export default function App() {
     const {
@@ -26,10 +28,42 @@ export default function App() {
         firstUncalledOrder,
         qrBase64,
         clearQr,
-        requestNotificationPermission
+        requestNotificationPermission,
+        handleDeleteOrder,
+        handleClearHistory,
+        handleResetAll
     } = useApp();
 
     const { isInstallable, install } = usePWAInstall();
+
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [modalConfig, setModalConfig] = useState<ConfirmModalProps & { isOpen: boolean }>({
+        isOpen: false, title: "", message: "", onConfirm: () => {}, onCancel: () => {}
+    });
+
+    const confirmClearHistory = () => {
+        setModalConfig({
+            isOpen: true,
+            title: "Dọn dẹp lịch sử",
+            message: "Bạn có chắc muốn xóa vĩnh viễn các đơn hàng đã gọi? Hành động này không thể hoàn tác.",
+            confirmText: "Xóa",
+            isDanger: true,
+            onConfirm: () => { handleClearHistory(); setModalConfig(prev => ({ ...prev, isOpen: false })); },
+            onCancel: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+        });
+    };
+
+    const confirmResetAll = () => {
+        setModalConfig({
+            isOpen: true,
+            title: "Xóa toàn bộ dữ liệu",
+            message: "⚠️ NGUY HIỂM: Tất cả dữ liệu hàng chờ, chi tiết và lịch sử sẽ bị xóa vĩnh viễn khỏi thiết bị này!",
+            confirmText: "Xóa trắng",
+            isDanger: true,
+            onConfirm: () => { handleResetAll(); setModalConfig(prev => ({ ...prev, isOpen: false })); },
+            onCancel: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+        });
+    };
 
     if (loading) {
         return <div className="h-[100dvh] w-full flex items-center justify-center bg-stone-100 text-stone-500">Đang tải...</div>;
@@ -50,21 +84,21 @@ export default function App() {
             {/* Tabs Indicator */}
             <div className="flex bg-white border-b border-stone-200 z-10 shadow-sm relative items-center justify-center">
                 <button 
-                    onClick={requestNotificationPermission}
+                    onClick={() => setIsMenuOpen(true)}
                     className="absolute left-3 p-2 text-stone-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-full transition shadow-sm active:scale-95"
-                    title="Bật thông báo"
+                    title="Menu"
                 >
-                    <Bell size={18} />
+                    <Menu size={22} />
                 </button>
                 <button 
                     onClick={() => scrollToScreen("queue")}
-                    className={`flex-1 py-3 text-sm font-medium text-center transition ${screen === "queue" ? "text-emerald-600" : "text-stone-400"}`}
+                    className={`flex-1 py-4 text-sm font-bold tracking-wide transition ${screen === "queue" ? "text-emerald-600" : "text-stone-400"}`}
                 >
                     Hàng chờ
                 </button>
                 <button 
                     onClick={() => scrollToScreen("detail")}
-                    className={`flex-1 py-3 text-sm font-medium text-center transition ${screen === "detail" ? "text-emerald-600" : "text-stone-400"}`}
+                    className={`flex-1 py-4 text-sm font-bold tracking-wide transition ${screen === "detail" ? "text-emerald-600" : "text-stone-400"}`}
                 >
                     Chi tiết
                 </button>
@@ -73,15 +107,6 @@ export default function App() {
                     animate={{ x: screen === "queue" ? "0%" : "100%" }}
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
-                {isInstallable && (
-                    <button 
-                        onClick={install}
-                        className="absolute right-3 p-2 text-emerald-600 bg-emerald-50 rounded-full hover:bg-emerald-100 transition shadow-sm active:scale-95"
-                        title="Tải ứng dụng về máy"
-                    >
-                        <Download size={18} />
-                    </button>
-                )}
             </div>
 
             <div className="flex-1 overflow-hidden relative">
@@ -100,7 +125,7 @@ export default function App() {
                         />
                     </div>
                     <div className="w-full h-full flex-shrink-0 snap-start overflow-hidden">
-                        <DetailScreen orders={detail} onMoveToQueue={handleMoveToQueue} onSave={handleSaveDetail} />
+                        <DetailScreen orders={detail} onMoveToQueue={handleMoveToQueue} onSave={handleSaveDetail} onDelete={handleDeleteOrder} />
                     </div>
                 </div>
             </div>
@@ -124,6 +149,18 @@ export default function App() {
                     <Phone size={26} />
                 </a>
             </div>
+
+            <Sidebar 
+                isOpen={isMenuOpen} 
+                onClose={() => setIsMenuOpen(false)}
+                onRequestNotification={requestNotificationPermission}
+                onDownload={install}
+                isInstallable={isInstallable}
+                onClearHistory={confirmClearHistory}
+                onReset={confirmResetAll}
+            />
+
+            <ConfirmModal {...modalConfig} />
         </div>
     );
 }
