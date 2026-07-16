@@ -56,7 +56,7 @@ self.addEventListener('push', (event) => {
 // Lắng nghe sự kiện khi người dùng bấm vào thông báo
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
-    const urlToOpen = event.notification.data.url;
+    const urlToOpen = event.notification.data.url ?? '/';
 
     event.waitUntil(
         self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
