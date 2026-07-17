@@ -1,6 +1,6 @@
-import React from "react";
+
 import DetailCard from "../components/DetailCard";
-import { DetailOrder } from "../api/orderApi";
+import { DetailOrder } from "../types/order";
 
 interface DetailScreenProps {
     orders: DetailOrder[];

@@ -1,13 +1,11 @@
-import React, { useState } from "react";
-import { Phone, Download, Bell, Menu } from "lucide-react";
+import { useState } from "react";
+import { Phone, Menu } from "lucide-react";
 import { motion } from "framer-motion";
 import { Toaster } from "react-hot-toast";
-import toast from "react-hot-toast";
 import QueueScreen from "./src/screens/QueueScreen";
 import DetailScreen from "./src/screens/DetailScreen";
 import { useApp } from "./src/hooks/useApp";
 import { usePWAInstall } from "./src/hooks/usePWAInstall";
-import { BASE_URL } from "./src/config";
 import Sidebar from "./src/components/Sidebar";
 import ConfirmModal, { ConfirmModalProps } from "./src/components/ConfirmModal";
 
@@ -18,7 +16,6 @@ export default function App() {
         calledQueue,
         detail,
         screen,
-        loading,
         scrollContainerRef,
         scrollToScreen,
         handleScroll,
@@ -64,10 +61,6 @@ export default function App() {
             onCancel: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
         });
     };
-
-    if (loading) {
-        return <div className="h-[100dvh] w-full flex items-center justify-center bg-stone-100 text-stone-500">Đang tải...</div>;
-    }
 
     return (
         <div className="h-[100dvh] w-full bg-stone-100 flex flex-col overflow-hidden">

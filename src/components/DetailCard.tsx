@@ -1,6 +1,6 @@
-import React from "react";
+
 import { Phone, Pencil, CornerUpLeft, Check, X, Trash2 } from "lucide-react";
-import { DetailOrder } from "../api/orderApi";
+import { DetailOrder } from "../types/order";
 import { useDetailCard } from "../hooks/useDetailCard";
 import LiveTimer from "./LiveTimer";
 

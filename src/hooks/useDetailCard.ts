@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DetailOrder } from "../api/orderApi";
+import { DetailOrder } from "../types/order";
 
 export function useDetailCard(order: DetailOrder, onSave: (updated: DetailOrder) => void) {
     const [editing, setEditing] = useState(false);

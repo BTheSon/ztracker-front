@@ -1,14 +1,11 @@
 import Dexie, { Table } from 'dexie';
+import { Order as DomainOrder } from '../types/order';
 
-export interface Order {
-    id: string;
-    address: string;
-    phone: string;
-    img_url?: string;
-    createdAt: string; 
+export interface Order extends DomainOrder {
     status: 'detail' | 'queue' | 'called';
     orderIndex?: number; // Dùng để lưu thứ tự khi kéo thả trong hàng chờ
     time?: string;
+    img_url?: string;
 }
 
 export class ZTrackerDB extends Dexie {

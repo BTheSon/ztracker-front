@@ -1,7 +1,7 @@
-import React from "react";
+
 import { GripVertical, Phone, CheckCircle2 } from "lucide-react";
 import { Reorder } from "framer-motion";
-import { Order } from "../api/orderApi";
+import { Order } from "../db/db";
 import LiveTimer from "../components/LiveTimer";
 
 interface QueueScreenProps {

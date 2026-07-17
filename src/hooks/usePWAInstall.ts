@@ -11,15 +11,17 @@ export function usePWAInstall() {
             setIsInstallable(true);
         };
 
-        window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-
-        window.addEventListener("appinstalled", () => {
+        const handleAppInstalled = () => {
             setIsInstallable(false);
             setDeferredPrompt(null);
-        });
+        };
+
+        window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+        window.addEventListener("appinstalled", handleAppInstalled);
 
         return () => {
             window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+            window.removeEventListener("appinstalled", handleAppInstalled);
         };
     }, []);
 
