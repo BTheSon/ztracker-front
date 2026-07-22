@@ -4,7 +4,8 @@ export interface NewOrderPayload {
     id: string;
     address: string;
     phone: string;
-    img_url: string;
+    img_url?: string;
+    raw_text?: string;
     createdAt: string | Date;
 }
 
@@ -16,6 +17,7 @@ export function mapSocketPayloadToOrder(payload: NewOrderPayload): Order {
         address: payload.address,
         phone: payload.phone,
         img_url: payload.img_url,
+        raw_text: payload.raw_text,
         createdAt: new Date(payload.createdAt).toISOString(),
         status: 'detail',
         time: timeFormatted,

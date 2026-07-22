@@ -6,6 +6,7 @@ export interface Order extends DomainOrder {
     orderIndex?: number; // Dùng để lưu thứ tự khi kéo thả trong hàng chờ
     time?: string;
     img_url?: string;
+    raw_text?: string;
 }
 
 export class ZTrackerDB extends Dexie {
@@ -14,10 +15,11 @@ export class ZTrackerDB extends Dexie {
     constructor() {
         super('ZTrackerDB');
         // id là khóa chính, các trường khác là index để query nhanh
-        this.version(1).stores({
+        this.version(2).stores({
             orders: 'id, status, createdAt, orderIndex' 
         });
     }
 }
 
 export const db = new ZTrackerDB();
+

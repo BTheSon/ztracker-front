@@ -9,4 +9,5 @@ export interface Order {
 export interface DetailOrder extends Order {
     time?: string;
     img_url?: string;
+    raw_text?: string;
 }

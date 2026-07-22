@@ -7,6 +7,10 @@ export function useOrderActions() {
         await orderRepository.update(order.id, { status: 'queue', orderIndex: Date.now() });
     };
 
+    const handleMoveToDetail = async (id: string) => {
+        await orderRepository.update(id, { status: 'detail' });
+    };
+
     const handleSaveDetail = async (updated: DetailOrder) => {
         await orderRepository.update(updated.id, { ...updated });
     };
@@ -32,12 +36,30 @@ export function useOrderActions() {
         toast.success("Đã xóa trắng toàn bộ dữ liệu");
     };
 
+    const handleCreateOrder = async (data: { address: string; phone: string }) => {
+        const now = new Date();
+        const id = `manual-${Date.now()}`;
+        const timeFormatted = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        await orderRepository.put({
+            id,
+            address: data.address,
+            phone: data.phone,
+            createdAt: now.toISOString(),
+            status: 'detail',
+            time: timeFormatted,
+            orderIndex: Date.now(),
+        });
+        toast.success('Đã tạo đơn hàng mới');
+    };
+
     return {
         handleMoveToQueue,
+        handleMoveToDetail,
         handleSaveDetail,
         handleDeleteOrder,
         handleCallQueueOrder,
         handleClearHistory,
-        handleResetAll
+        handleResetAll,
+        handleCreateOrder
     };
 }

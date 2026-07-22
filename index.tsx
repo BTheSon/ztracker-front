@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Phone, Menu } from "lucide-react";
+import { Phone, Menu, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { Toaster } from "react-hot-toast";
 import QueueScreen from "./src/screens/QueueScreen";
@@ -8,6 +8,7 @@ import { useApp } from "./src/hooks/useApp";
 import { usePWAInstall } from "./src/hooks/usePWAInstall";
 import Sidebar from "./src/components/Sidebar";
 import ConfirmModal, { ConfirmModalProps } from "./src/components/ConfirmModal";
+import CreateOrderModal from "./src/components/CreateOrderModal";
 
 export default function App() {
     const {
@@ -20,6 +21,7 @@ export default function App() {
         scrollToScreen,
         handleScroll,
         handleMoveToQueue,
+        handleMoveToDetail,
         handleSaveDetail,
         handleCallQueueOrder,
         firstUncalledOrder,
@@ -28,12 +30,14 @@ export default function App() {
         requestNotificationPermission,
         handleDeleteOrder,
         handleClearHistory,
-        handleResetAll
+        handleResetAll,
+        handleCreateOrder
     } = useApp();
 
     const { isInstallable, install } = usePWAInstall();
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [modalConfig, setModalConfig] = useState<ConfirmModalProps & { isOpen: boolean }>({
         isOpen: false, title: "", message: "", onConfirm: () => {}, onCancel: () => {}
     });
@@ -114,7 +118,8 @@ export default function App() {
                             queue={queue} 
                             calledQueue={calledQueue}
                             onReorder={setQueue} 
-                            onCallOrder={handleCallQueueOrder} 
+                            onCallOrder={handleCallQueueOrder}
+                            onMoveToDetail={handleMoveToDetail}
                         />
                     </div>
                     <div className="w-full h-full flex-shrink-0 snap-start overflow-hidden">
@@ -123,11 +128,21 @@ export default function App() {
                 </div>
             </div>
 
-            {/* Floating Action Button */}
-            <div 
-                className="absolute left-1/2 -translate-x-1/2 z-50 pointer-events-none"
+            {/* FAB: Gọi đơn đầu tiên (giữa) + Tạo đơn mới (phải) */}
+            <div
+                className="absolute bottom-6 left-0 right-0 z-50 pointer-events-none flex items-center justify-center"
                 style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
             >
+                {/* Nút Tạo đơn mới */}
+                <button
+                    onClick={() => setIsCreateOpen(true)}
+                    className="absolute right-5 w-12 h-12 rounded-full bg-white border border-stone-200 shadow-lg flex items-center justify-center text-emerald-600 pointer-events-auto transition active:scale-95 hover:bg-emerald-50"
+                    title="Tạo đơn mới"
+                >
+                    <Plus size={22} />
+                </button>
+
+                {/* Nút Gọi đơn FAB chính giữa */}
                 <a
                     href={firstUncalledOrder ? `tel:${firstUncalledOrder.phone}` : undefined}
                     onClick={() => {
@@ -154,6 +169,12 @@ export default function App() {
             />
 
             <ConfirmModal {...modalConfig} />
+
+            <CreateOrderModal
+                isOpen={isCreateOpen}
+                onClose={() => setIsCreateOpen(false)}
+                onCreate={handleCreateOrder}
+            />
         </div>
     );
 }

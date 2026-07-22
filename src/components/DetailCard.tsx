@@ -1,4 +1,4 @@
-
+import React from "react";
 import { Phone, Pencil, CornerUpLeft, Check, X, Trash2 } from "lucide-react";
 import { DetailOrder } from "../types/order";
 import { useDetailCard } from "../hooks/useDetailCard";
@@ -20,11 +20,29 @@ function formatPhone(phone: string) {
     return phone;
 }
 
+// Format phone for input display: insert dots but let user type naturally
+function formatPhoneInput(raw: string): string {
+    const digits = raw.replace(/\D/g, '');
+    if (digits.length === 0) return '';
+    if (digits.length <= 4) return digits;
+    if (digits.length <= 7) return `${digits.slice(0,4)}.${digits.slice(4)}`;
+    return `${digits.slice(0,4)}.${digits.slice(4,7)}.${digits.slice(7,10)}`;
+}
+
+function unformatPhone(formatted: string): string {
+    return formatted.replace(/\D/g, '');
+}
+
 export default function DetailCard({ order, onMoveToQueue, onSave, onDelete }: DetailCardProps) {
     const { 
         editing, startEditing, cancelEditing, current, 
         editAddress, setEditAddress, editPhone, setEditPhone, handleSave 
     } = useDetailCard(order, onSave);
+
+    const handlePhoneInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const rawDigits = unformatPhone(e.target.value);
+        setEditPhone(rawDigits);
+    };
 
     return (
         <div className="bg-white border-b border-stone-200">
@@ -47,10 +65,11 @@ export default function DetailCard({ order, onMoveToQueue, onSave, onDelete }: D
             <div className="px-4 pb-3 text-stone-500 text-sm flex items-center justify-between">
                 {editing ? (
                     <input 
-                        value={editPhone}
-                        onChange={e => setEditPhone(e.target.value)}
+                        value={formatPhoneInput(editPhone)}
+                        onChange={handlePhoneInputChange}
                         className="text-sm text-stone-800 border-b-2 border-emerald-400 focus:outline-none w-full mr-4 bg-emerald-50/50 px-1 py-0.5 rounded-t-sm transition-colors"
                         type="tel"
+                        inputMode="numeric"
                     />
                 ) : (
                     <span>{formatPhone(current.phone)}</span>
@@ -58,14 +77,22 @@ export default function DetailCard({ order, onMoveToQueue, onSave, onDelete }: D
                 {current.time && !editing && <span className="text-xs text-stone-400 flex-shrink-0">{current.time}</span>}
             </div>
 
-            {current.img_url && (
-                <div className="px-4 pb-4">
-                    <img 
-                        src={current.img_url} 
-                        alt="Hóa đơn" 
-                        className="w-full h-auto object-cover rounded-lg border border-stone-200"
-                        loading="lazy"
-                    />
+            {(current.img_url || current.raw_text) && (
+                <div className="px-4 pb-4 flex flex-col gap-3">
+                    {current.img_url && (
+                        <img 
+                            src={current.img_url} 
+                            alt="Hóa đơn" 
+                            className="w-full h-auto object-cover rounded-lg border border-stone-200"
+                            loading="lazy"
+                        />
+                    )}
+                    {current.raw_text && (
+                        <div className="bg-stone-50 border border-stone-200 rounded-lg p-3">
+                            <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-1.5">Nội dung gốc</p>
+                            <p className="text-sm text-stone-700 whitespace-pre-wrap leading-relaxed">{current.raw_text}</p>
+                        </div>
+                    )}
                 </div>
             )}
 
