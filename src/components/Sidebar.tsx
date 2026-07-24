@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Download, Trash2, RotateCcw, X } from 'lucide-react';
+import { Bell, Download, Trash2, RotateCcw, X, History } from 'lucide-react';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -9,9 +9,10 @@ interface SidebarProps {
     isInstallable: boolean;
     onClearHistory: () => void;
     onReset: () => void;
+    onOpenHistory: () => void;
 }
 
-export default function Sidebar({ isOpen, onClose, onRequestNotification, onDownload, isInstallable, onClearHistory, onReset }: SidebarProps) {
+export default function Sidebar({ isOpen, onClose, onRequestNotification, onDownload, isInstallable, onClearHistory, onReset, onOpenHistory }: SidebarProps) {
     return (
         <AnimatePresence>
             {isOpen && (
@@ -33,6 +34,11 @@ export default function Sidebar({ isOpen, onClose, onRequestNotification, onDown
                         </div>
                         
                         <div className="flex-1 overflow-y-auto py-3 space-y-1">
+                            <button onClick={() => { onClose(); onOpenHistory(); }} className="w-full flex items-center gap-4 px-6 py-4 text-left text-stone-700 hover:bg-stone-50 active:bg-stone-100 transition">
+                                <History size={22} className="text-emerald-500"/>
+                                <span className="font-medium">Lịch sử gọi</span>
+                            </button>
+                            
                             <button onClick={() => { onClose(); onRequestNotification(); }} className="w-full flex items-center gap-4 px-6 py-4 text-left text-stone-700 hover:bg-stone-50 active:bg-stone-100 transition">
                                 <Bell size={22} className="text-emerald-500"/>
                                 <span className="font-medium">Bật thông báo</span>

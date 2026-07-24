@@ -1,5 +1,5 @@
 
-import { GripVertical, Phone, CheckCircle2, CornerDownLeft } from "lucide-react";
+import { GripVertical, Phone, CheckCircle2, CornerDownLeft, Image as ImageIcon } from "lucide-react";
 import { Reorder } from "framer-motion";
 import { Order } from "../db/db";
 import LiveTimer from "../components/LiveTimer";
@@ -8,8 +8,9 @@ interface QueueScreenProps {
     queue: Order[];
     calledQueue: Order[];
     onReorder: (queue: Order[]) => void;
-    onCallOrder: (id: string, isAlreadyCalled: boolean) => void;
+    onCallOrder: (id: string, phone: string, isAlreadyCalled: boolean) => Promise<void>;
     onMoveToDetail: (id: string) => void;
+    onViewImage?: (order: Order) => void;
 }
 
 function formatPhone(phone: string) {
@@ -21,7 +22,7 @@ function formatPhone(phone: string) {
     return phone;
 }
 
-export default function QueueScreen({ queue, calledQueue, onReorder, onCallOrder, onMoveToDetail }: QueueScreenProps) {
+export default function QueueScreen({ queue, calledQueue, onReorder, onCallOrder, onMoveToDetail, onViewImage }: QueueScreenProps) {
     return (
         <div className="flex flex-col h-full bg-stone-100">
             <div className="flex-1 overflow-y-auto pb-32">
@@ -37,6 +38,30 @@ export default function QueueScreen({ queue, calledQueue, onReorder, onCallOrder
                                     isFirst ? "border-t-2 border-b-2 border-t-emerald-500 border-b-emerald-500" : "",
                                 ].join(" ")}
                             >
+                                <div className="flex items-center gap-2 mr-3 flex-shrink-0">
+                                    <div className="text-stone-300 p-1 pointer-events-auto cursor-grab active:cursor-grabbing">
+                                        <GripVertical size={20} />
+                                    </div>
+                                    <button
+                                        onPointerDown={(e) => e.stopPropagation()}
+                                        onClick={() => onCallOrder(item.id, item.phone, false)}
+                                        className="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-md transition active:scale-90 cursor-pointer pointer-events-auto bg-emerald-500 hover:bg-emerald-600 flex-shrink-0"
+                                        title="Gọi điện"
+                                    >
+                                        <Phone size={18} />
+                                    </button>
+                                    {(item.img_url || item.raw_text) && onViewImage && (
+                                        <button
+                                            onPointerDown={(e) => e.stopPropagation()}
+                                            onClick={() => onViewImage(item)}
+                                            className="w-10 h-10 rounded-full flex items-center justify-center text-emerald-600 shadow-md transition active:scale-90 cursor-pointer pointer-events-auto bg-emerald-50 hover:bg-emerald-100 flex-shrink-0 border border-emerald-200"
+                                            title="Xem nội dung"
+                                        >
+                                            <ImageIcon size={18} />
+                                        </button>
+                                    )}
+                                </div>
+
                                 <div className="flex-1 min-w-0">
                                     <div className="text-base text-stone-800 font-semibold truncate">{item.address}</div>
                                     <div className="text-stone-400 text-sm mt-0.5">{formatPhone(item.phone)}</div>
@@ -48,7 +73,6 @@ export default function QueueScreen({ queue, calledQueue, onReorder, onCallOrder
                                             <LiveTimer createdAt={item.createdAt} />
                                         </span>
                                         <div className="flex items-center gap-1.5">
-                                            {/* Chuyển về Detail */}
                                             <button
                                                 onPointerDown={(e) => e.stopPropagation()}
                                                 onClick={() => onMoveToDetail(item.id)}
@@ -57,21 +81,7 @@ export default function QueueScreen({ queue, calledQueue, onReorder, onCallOrder
                                             >
                                                 <CornerDownLeft size={14} />
                                             </button>
-                                            {/* Gọi điện */}
-                                            <a
-                                                href={`tel:${item.phone}`}
-                                                onPointerDown={(e) => e.stopPropagation()}
-                                                onClick={() => onCallOrder(item.id, false)}
-                                                className="w-8 h-8 rounded-full flex items-center justify-center text-white shadow-sm transition active:scale-90 cursor-pointer pointer-events-auto bg-emerald-500 hover:bg-emerald-600"
-                                                title="Gọi điện"
-                                            >
-                                                <Phone size={14} />
-                                            </a>
                                         </div>
-                                    </div>
-                                    
-                                    <div className="text-stone-300 p-1 pointer-events-auto">
-                                        <GripVertical size={20} />
                                     </div>
                                 </div>
                             </Reorder.Item>
@@ -94,6 +104,25 @@ export default function QueueScreen({ queue, calledQueue, onReorder, onCallOrder
                                     key={item.id}
                                     className="border-b border-stone-200 px-4 py-3 flex items-center justify-between bg-stone-100/70 opacity-75 grayscale-[20%]"
                                 >
+                                    <div className="flex items-center gap-2 mr-3 flex-shrink-0">
+                                        <button
+                                            onClick={() => onCallOrder(item.id, item.phone, true)}
+                                            className="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-md transition active:scale-90 cursor-pointer pointer-events-auto bg-stone-300 hover:bg-stone-400"
+                                            title="Gọi lại"
+                                        >
+                                            <Phone size={18} />
+                                        </button>
+                                        {(item.img_url || item.raw_text) && onViewImage && (
+                                            <button
+                                                onClick={() => onViewImage(item)}
+                                                className="w-10 h-10 rounded-full flex items-center justify-center text-stone-500 shadow-md transition active:scale-90 cursor-pointer pointer-events-auto bg-stone-100 hover:bg-stone-200 border border-stone-200"
+                                                title="Xem nội dung"
+                                            >
+                                                <ImageIcon size={18} />
+                                            </button>
+                                        )}
+                                    </div>
+
                                     <div className="flex-1 min-w-0">
                                         <div className="text-base text-stone-800 font-medium flex items-center gap-2">
                                             <CheckCircle2 size={16} className="text-stone-400 flex-shrink-0" />
@@ -103,17 +132,11 @@ export default function QueueScreen({ queue, calledQueue, onReorder, onCallOrder
                                     </div>
                                     
                                     <div className="flex items-center gap-2 ml-2 flex-shrink-0">
-                                        <span className="text-stone-400 font-medium text-xs">
-                                            <LiveTimer createdAt={item.createdAt} />
-                                        </span>
-                                        <a
-                                            href={`tel:${item.phone}`}
-                                            onClick={() => onCallOrder(item.id, true)}
-                                            className="w-8 h-8 rounded-full flex items-center justify-center text-white shadow-sm transition active:scale-90 cursor-pointer pointer-events-auto bg-stone-300"
-                                            title="Gọi lại"
-                                        >
-                                            <Phone size={14} />
-                                        </a>
+                                        <div className="flex flex-col items-end gap-1.5">
+                                            <span className="text-stone-400 font-medium text-xs">
+                                                <LiveTimer createdAt={item.createdAt} />
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             ))}

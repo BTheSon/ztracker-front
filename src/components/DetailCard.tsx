@@ -9,6 +9,7 @@ interface DetailCardProps {
     onMoveToQueue: (order: DetailOrder) => void;
     onSave: (updated: DetailOrder) => void;
     onDelete: (id: string) => void;
+    onCall?: (phone: string) => void;
 }
 
 function formatPhone(phone: string) {
@@ -33,7 +34,7 @@ function unformatPhone(formatted: string): string {
     return formatted.replace(/\D/g, '');
 }
 
-export default function DetailCard({ order, onMoveToQueue, onSave, onDelete }: DetailCardProps) {
+export default function DetailCard({ order, onMoveToQueue, onSave, onDelete, onCall }: DetailCardProps) {
     const { 
         editing, startEditing, cancelEditing, current, 
         editAddress, setEditAddress, editPhone, setEditPhone, handleSave 
@@ -114,6 +115,13 @@ export default function DetailCard({ order, onMoveToQueue, onSave, onDelete }: D
                     </div>
                 ) : (
                     <>
+                        <button
+                            onClick={() => onCall ? onCall(current.phone) : window.location.href = `tel:${current.phone}`}
+                            className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center text-white hover:bg-emerald-600 shadow-md shadow-emerald-500/20 transition active:scale-90"
+                            title={`Gọi ${formatPhone(current.phone)}`}
+                        >
+                            <Phone size={20} />
+                        </button>
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={startEditing}
@@ -141,13 +149,6 @@ export default function DetailCard({ order, onMoveToQueue, onSave, onDelete }: D
                                 <Trash2 size={18} />
                             </button>
                         </div>
-                        <a
-                            href={`tel:${current.phone}`}
-                            className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center text-white hover:bg-emerald-600 shadow-md shadow-emerald-500/20 transition active:scale-90"
-                            title={`Gọi ${current.phone}`}
-                        >
-                            <Phone size={20} />
-                        </a>
                     </>
                 )}
             </div>

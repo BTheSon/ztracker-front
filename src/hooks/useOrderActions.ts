@@ -19,9 +19,10 @@ export function useOrderActions() {
         await orderRepository.delete(id);
     };
 
-    const handleCallQueueOrder = async (id: string, isAlreadyCalled: boolean) => {
-        if (isAlreadyCalled) return; // Dial native phone app, no state update needed
+    const handleCallQueueOrder = async (id: string, phone: string, isAlreadyCalled: boolean): Promise<void> => {
+        // Update state FIRST, then trigger the phone call
         await orderRepository.update(id, { status: 'called' });
+        window.location.href = `tel:${phone}`;
     };
 
     const handleClearHistory = async () => {

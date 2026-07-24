@@ -9,7 +9,11 @@ export function useOrderData() {
     const detail = [...detailLive].reverse() as DetailOrder[];
     
     const calledLive = useLiveQuery(() => db.orders.where('status').equals('called').sortBy('createdAt')) || [];
-    const calledQueue = [...calledLive].reverse();
+    const allCalledOrders = [...calledLive].reverse();
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const calledQueue = allCalledOrders.filter(order => new Date(order.createdAt) >= today);
     
     const queueLive = useLiveQuery(() => db.orders.where('status').equals('queue').sortBy('orderIndex')) || [];
     const [queue, setQueueLocal] = useState<DbOrder[]>([]);
@@ -30,6 +34,7 @@ export function useOrderData() {
     return {
         detail,
         calledQueue,
+        allCalledOrders,
         queue,
         setQueue,
         firstUncalledOrder: queue[0],

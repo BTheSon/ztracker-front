@@ -4,17 +4,21 @@ import { motion } from "framer-motion";
 import { Toaster } from "react-hot-toast";
 import QueueScreen from "./src/screens/QueueScreen";
 import DetailScreen from "./src/screens/DetailScreen";
+import HistoryScreen from "./src/screens/HistoryScreen";
 import { useApp } from "./src/hooks/useApp";
 import { usePWAInstall } from "./src/hooks/usePWAInstall";
 import Sidebar from "./src/components/Sidebar";
 import ConfirmModal, { ConfirmModalProps } from "./src/components/ConfirmModal";
 import CreateOrderModal from "./src/components/CreateOrderModal";
+import ImageModal from "./src/components/ImageModal";
+import { Order } from "./src/db/db";
 
 export default function App() {
     const {
         queue,
         setQueue,
         calledQueue,
+        allCalledOrders,
         detail,
         screen,
         scrollContainerRef,
@@ -38,6 +42,14 @@ export default function App() {
 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [isImageOpen, setIsImageOpen] = useState(false);
+    const [imageOrder, setImageOrder] = useState<Order | null>(null);
+
+    const handleViewImage = (order: Order) => {
+        setImageOrder(order);
+        setIsImageOpen(true);
+    };
     const [modalConfig, setModalConfig] = useState<ConfirmModalProps & { isOpen: boolean }>({
         isOpen: false, title: "", message: "", onConfirm: () => {}, onCancel: () => {}
     });
@@ -120,6 +132,7 @@ export default function App() {
                             onReorder={setQueue} 
                             onCallOrder={handleCallQueueOrder}
                             onMoveToDetail={handleMoveToDetail}
+                            onViewImage={handleViewImage}
                         />
                     </div>
                     <div className="w-full h-full flex-shrink-0 snap-start overflow-hidden">
@@ -143,19 +156,19 @@ export default function App() {
                 </button>
 
                 {/* Nút Gọi đơn FAB chính giữa */}
-                <a
-                    href={firstUncalledOrder ? `tel:${firstUncalledOrder.phone}` : undefined}
+                <button
+                    disabled={!firstUncalledOrder}
                     onClick={() => {
-                        if (firstUncalledOrder) handleCallQueueOrder(firstUncalledOrder.id, false);
+                        if (firstUncalledOrder) handleCallQueueOrder(firstUncalledOrder.id, firstUncalledOrder.phone, false);
                     }}
                     className={[
                         "w-16 h-16 rounded-full flex items-center justify-center text-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] pointer-events-auto transition-transform active:scale-95",
-                        firstUncalledOrder ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/30" : "bg-stone-300 pointer-events-none",
+                        firstUncalledOrder ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/30" : "bg-stone-300 opacity-60 cursor-not-allowed",
                     ].join(" ")}
                     title={firstUncalledOrder ? `Gọi ${firstUncalledOrder.phone}` : "Không có đơn cần gọi"}
                 >
                     <Phone size={26} />
-                </a>
+                </button>
             </div>
 
             <Sidebar 
@@ -166,6 +179,7 @@ export default function App() {
                 isInstallable={isInstallable}
                 onClearHistory={confirmClearHistory}
                 onReset={confirmResetAll}
+                onOpenHistory={() => setIsHistoryOpen(true)}
             />
 
             <ConfirmModal {...modalConfig} />
@@ -174,6 +188,21 @@ export default function App() {
                 isOpen={isCreateOpen}
                 onClose={() => setIsCreateOpen(false)}
                 onCreate={handleCreateOrder}
+            />
+
+            <HistoryScreen
+                isOpen={isHistoryOpen}
+                onClose={() => setIsHistoryOpen(false)}
+                history={allCalledOrders}
+                onCallOrder={handleCallQueueOrder}
+                onViewImage={handleViewImage}
+            />
+
+            <ImageModal
+                isOpen={isImageOpen}
+                onClose={() => setIsImageOpen(false)}
+                img_url={imageOrder?.img_url}
+                raw_text={imageOrder?.raw_text}
             />
         </div>
     );
