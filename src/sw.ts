@@ -53,19 +53,24 @@ self.addEventListener('push', (event) => {
     }
 
     const processPush = async () => {
+        let imageUrl: string | undefined = payload.image;
+
         // Trích xuất cục Order từ payload theo định dạng Backend mới
         if (payload.data && payload.data.type === 'new_order') {
             const orderData = payload.data.orderData;
             if (orderData) {
                 console.log("Đã nhận được chi tiết đơn hàng (Background):", orderData);
                 await saveOrderToIDB(orderData);
+                if (orderData.img_url) {
+                    imageUrl = orderData.img_url;
+                }
             }
         }
 
         const options: NotificationOptions = {
             body: payload.body,
             icon: payload.icon || '/icon-192x192.svg',
-            badge: '/icon-192x192.svg',
+            badge: imageUrl,
             data: payload.data || { url: '/' }
         };
 
