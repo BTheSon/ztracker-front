@@ -9,7 +9,11 @@ export interface IRealtimeClient {
 }
 
 export function createRealtimeClient(): IRealtimeClient {
-    const socket = io(BASE_URL);
+    const socket = io(BASE_URL, {
+        autoConnect: false,            // Không tự động kết nối ngay
+        transports: ['websocket'],     // Bỏ qua HTTP long-polling, dùng thẳng WebSocket
+        reconnectionDelay: 2000,       // Chờ 2s trước khi reconnect
+    });
     
     return {
         on: (event, callback) => {

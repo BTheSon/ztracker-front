@@ -1,17 +1,20 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { Phone, Menu, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { Toaster } from "react-hot-toast";
 import QueueScreen from "./src/screens/QueueScreen";
 import DetailScreen from "./src/screens/DetailScreen";
-import HistoryScreen from "./src/screens/HistoryScreen";
 import { useApp } from "./src/hooks/useApp";
 import { usePWAInstall } from "./src/hooks/usePWAInstall";
 import Sidebar from "./src/components/Sidebar";
-import ConfirmModal, { ConfirmModalProps } from "./src/components/ConfirmModal";
-import CreateOrderModal from "./src/components/CreateOrderModal";
-import ImageModal from "./src/components/ImageModal";
+import { ConfirmModalProps } from "./src/components/ConfirmModal";
 import { Order } from "./src/db/db";
+
+// Code splitting: lazy load các modal/overlay (không hiện ngay khi mở app)
+const HistoryScreen = lazy(() => import("./src/screens/HistoryScreen"));
+const ConfirmModal = lazy(() => import("./src/components/ConfirmModal"));
+const CreateOrderModal = lazy(() => import("./src/components/CreateOrderModal"));
+const ImageModal = lazy(() => import("./src/components/ImageModal"));
 
 export default function App() {
     const {
@@ -182,28 +185,30 @@ export default function App() {
                 onOpenHistory={() => setIsHistoryOpen(true)}
             />
 
-            <ConfirmModal {...modalConfig} />
+            <Suspense fallback={null}>
+                <ConfirmModal {...modalConfig} />
 
-            <CreateOrderModal
-                isOpen={isCreateOpen}
-                onClose={() => setIsCreateOpen(false)}
-                onCreate={handleCreateOrder}
-            />
+                <CreateOrderModal
+                    isOpen={isCreateOpen}
+                    onClose={() => setIsCreateOpen(false)}
+                    onCreate={handleCreateOrder}
+                />
 
-            <HistoryScreen
-                isOpen={isHistoryOpen}
-                onClose={() => setIsHistoryOpen(false)}
-                history={allCalledOrders}
-                onCallOrder={handleCallQueueOrder}
-                onViewImage={handleViewImage}
-            />
+                <HistoryScreen
+                    isOpen={isHistoryOpen}
+                    onClose={() => setIsHistoryOpen(false)}
+                    history={allCalledOrders}
+                    onCallOrder={handleCallQueueOrder}
+                    onViewImage={handleViewImage}
+                />
 
-            <ImageModal
-                isOpen={isImageOpen}
-                onClose={() => setIsImageOpen(false)}
-                img_url={imageOrder?.img_url}
-                raw_text={imageOrder?.raw_text}
-            />
+                <ImageModal
+                    isOpen={isImageOpen}
+                    onClose={() => setIsImageOpen(false)}
+                    img_url={imageOrder?.img_url}
+                    raw_text={imageOrder?.raw_text}
+                />
+            </Suspense>
         </div>
     );
 }

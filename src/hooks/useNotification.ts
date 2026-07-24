@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import { subscribeToWebPush } from "../utils/pushHelper";
 
@@ -6,6 +6,7 @@ export function useNotification() {
     const [notifPermission, setNotifPermission] = useState(
         "Notification" in window ? Notification.permission : "denied"
     );
+    const hasAutoSubscribed = useRef(false);
 
     const trySubscribe = async () => {
         await subscribeToWebPush();
@@ -31,10 +32,16 @@ export function useNotification() {
         }
     };
 
+    // Defer: Chỉ tự động subscribe nếu đã có quyền, và delay 3s để UI render trước
     useEffect(() => {
-        if (Notification.permission !== "denied") {
-            requestNotificationPermission();
-        }
+        if (hasAutoSubscribed.current) return;
+        const timer = setTimeout(async () => {
+            if (Notification.permission === "granted") {
+                hasAutoSubscribed.current = true;
+                await subscribeToWebPush();
+            }
+        }, 3000);
+        return () => clearTimeout(timer);
     }, []);
 
     return { notifPermission, requestNotificationPermission };

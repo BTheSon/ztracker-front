@@ -6,7 +6,39 @@ import { precacheAndRoute } from 'workbox-precaching';
 // Tự động cache các file tĩnh của ứng dụng do Vite build ra
 precacheAndRoute(self.__WB_MANIFEST || []);
 
-import { db } from './db/db';
+// Helper: Ghi order vào IndexedDB bằng raw API (không cần import Dexie)
+function saveOrderToIDB(orderData: any): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open('ZTrackerDB');
+        request.onsuccess = () => {
+            const db = request.result;
+            try {
+                const tx = db.transaction('orders', 'readwrite');
+                const store = tx.objectStore('orders');
+                store.put({
+                    id: orderData.id,
+                    address: orderData.address,
+                    phone: orderData.phone,
+                    img_url: orderData.img_url,
+                    createdAt: orderData.createdAt,
+                    status: 'detail',
+                    time: new Date(orderData.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    orderIndex: Date.now()
+                });
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+            } catch (e) {
+                // DB chưa có table orders (chưa mở app lần nào) → bỏ qua
+                console.warn('SW: Không thể ghi order vào IDB:', e);
+                resolve();
+            }
+        };
+        request.onerror = () => {
+            console.warn('SW: Không thể mở IDB:', request.error);
+            resolve(); // Không block notification
+        };
+    });
+}
 
 // Lắng nghe sự kiện Push từ Backend gởi tới
 self.addEventListener('push', (event) => {
@@ -26,17 +58,7 @@ self.addEventListener('push', (event) => {
             const orderData = payload.data.orderData;
             if (orderData) {
                 console.log("Đã nhận được chi tiết đơn hàng (Background):", orderData);
-                // Lưu vào IndexedDB (trạng thái mặc định là 'detail')
-                await db.orders.put({
-                    id: orderData.id,
-                    address: orderData.address,
-                    phone: orderData.phone,
-                    img_url: orderData.img_url,
-                    createdAt: orderData.createdAt,
-                    status: 'detail',
-                    time: new Date(orderData.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    orderIndex: Date.now()
-                });
+                await saveOrderToIDB(orderData);
             }
         }
 
@@ -73,3 +95,4 @@ self.addEventListener('notificationclick', (event) => {
         })
     );
 });
+

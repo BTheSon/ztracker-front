@@ -34,8 +34,14 @@ export function useSocketEvents(onQr: (base64: string) => void) {
             toast(payload.msg, { icon: "🔔" });
         });
 
+        // Defer kết nối socket: chờ UI render xong rồi mới connect
+        const connectTimer = setTimeout(() => {
+            if (mounted) client.connect();
+        }, 500);
+
         return () => {
             mounted = false;
+            clearTimeout(connectTimer);
             client.disconnect();
         };
     }, [onQr]);
