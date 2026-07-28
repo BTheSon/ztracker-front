@@ -17,7 +17,7 @@ export default defineConfig({
         enabled: true,
         type: 'module'
       },
-      includeAssets: ['icon-192x192.svg', 'icon-512x512.svg'],
+      includeAssets: ['icon-192x192.svg', 'icon-512x512.svg', 'badge-96x96.svg', 'pwa-192x192.png'],
       manifest: {
         name: 'ZTracker',
         short_name: 'ZTracker',
@@ -27,14 +27,15 @@ export default defineConfig({
         display: 'standalone',
         icons: [
           {
-            src: '/icon-192x192.svg',
+            src: '/pwa-192x192.png',
             sizes: '192x192',
-            type: 'image/svg+xml'
+            type: 'image/png',
+            purpose: 'any maskable'
           },
           {
-            src: '/icon-512x512.svg',
+            src: '/pwa-192x192.png',
             sizes: '512x512',
-            type: 'image/svg+xml',
+            type: 'image/png',
             purpose: 'any maskable'
           }
         ]
