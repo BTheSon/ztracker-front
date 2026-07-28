@@ -3,6 +3,17 @@ declare let self: ServiceWorkerGlobalScope;
 
 import { precacheAndRoute } from 'workbox-precaching';
 
+declare global {
+    interface NotificationOptions {
+        image?: string;
+        renotify?: boolean;
+        timestamp?: number;
+        vibrate?: number[];
+    }
+}
+
+export {};
+
 // Tự động cache các file tĩnh của ứng dụng do Vite build ra
 precacheAndRoute(self.__WB_MANIFEST || []);
 
@@ -69,8 +80,10 @@ self.addEventListener('push', (event) => {
 
         const options: NotificationOptions = {
             body: payload.body,
-            icon: payload.icon || '/icon-192x192.svg',
-            badge: imageUrl,
+            icon: imageUrl || '/icon-192x192.svg',
+            badge: '/badge-96x96.svg',
+            vibrate: [300, 100, 300, 100, 600],
+            image: imageUrl,
             data: payload.data || { url: '/' }
         };
 
